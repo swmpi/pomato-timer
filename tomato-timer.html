@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tom Tom Tom</title>
+  <style>
+    :root{
+      --bg-top:#1a3021;
+      --bg-bot:#0c1610;
+      --herb:#5c8a54;
+      --cream:#fff3e2;
+      --muted:#b9cbb4;
+      --tomato-hi:#ff8a6b;
+      --tomato-mid:#ef4b39;
+      --tomato-shade:#d62a1e;
+      --tomato-deep:#a81a12;
+      --stripes:repeating-conic-gradient(from 8deg,
+        rgba(120,15,8,0) 0deg 26deg,
+        rgba(120,15,8,.16) 30deg 34deg,
+        rgba(120,15,8,0) 38deg);
+      --stripe-blend:multiply;
+      --shadow-dark:rgba(120,10,6,.55);
+      --shadow-light:rgba(255,190,160,.38);
+      --leaf:#4a9a41;
+      --leaf-deep:#2c6a29;
+      --ring:#ffe1a8;
+      --ring-track:rgba(255,240,220,.14);
+      --hand:#20321f;
+      --hand-tip:#ffe1a8;
+      --pip-on:#ef4b39;
+      --pip-off:rgba(255,255,255,.14);
+    }
+
+    /* Green Zebra — green body with yellow-green stripes */
+    body[data-variety="green"]{
+      --tomato-hi:#e6f18c;
+      --tomato-mid:#8fbf46;
+      --tomato-shade:#5f9130;
+      --tomato-deep:#39631d;
+      --stripes:repeating-conic-gradient(from 8deg,
+        rgba(210,238,110,0) 0deg 22deg,
+        rgba(210,238,110,.9) 27deg 33deg,
+        rgba(210,238,110,0) 38deg);
+      --stripe-blend:overlay;
+      --shadow-dark:rgba(38,66,16,.55);
+      --shadow-light:rgba(232,246,170,.42);
+      --pip-on:#8fbf46;
+    }
+
+    /* Black Krim — dusky purple with hints of red */
+    body[data-variety="krim"]{
+      --tomato-hi:#b07690;
+      --tomato-mid:#6e3a5a;
+      --tomato-shade:#4c2640;
+      --tomato-deep:#2f172c;
+      --stripes:repeating-conic-gradient(from 8deg,
+        rgba(198,52,46,0) 0deg 22deg,
+        rgba(198,52,46,.6) 27deg 34deg,
+        rgba(198,52,46,0) 38deg);
+      --stripe-blend:soft-light;
+      --shadow-dark:rgba(38,14,36,.6);
+      --shadow-light:rgba(214,172,202,.34);
+      --pip-on:#9c4763;
+    }
+
+    /* Tomacco — deep tobacco red banded with cured-leaf brown */
+    body[data-variety="tomacco"]{
+      --tomato-hi:#f2795c;
+      --tomato-mid:#d6352a;
+      --tomato-shade:#9e2018;
+      --tomato-deep:#63120d;
+      --stripes:repeating-conic-gradient(from 8deg,
+        rgba(92,56,26,0) 0deg 21deg,
+        rgba(92,56,26,.92) 26deg 34deg,
+        rgba(92,56,26,0) 38deg);
+      /* the other varieties tint their base colour; brown has more green than red
+         does, so multiply/overlay can only darken toward red. normal lays down
+         actual brown pigment. */
+      --stripe-blend:normal;
+      --shadow-dark:rgba(64,18,8,.55);
+      --shadow-light:rgba(255,188,152,.36);
+      --pip-on:#b8442a;
+    }
+
+    *{box-sizing:border-box;margin:0;padding:0}
+
+    html,body{height:100%}
+
+    body{
+      min-height:100%;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:clamp(20px,4vh,40px);
+      padding:32px 20px;
+      font-family:"Georgia","Iowan Old Style",serif;
+      color:var(--cream);
+      background:
+        radial-gradient(120% 90% at 50% -10%, #244430 0%, transparent 55%),
+        linear-gradient(180deg, var(--bg-top), var(--bg-bot));
+      background-attachment:fixed;
+    }
+
+    .brand{
+      text-align:center;
+      line-height:1;
+    }
+    .brand .kicker{
+      font-family:ui-sans-serif,system-ui,sans-serif;
+      text-transform:uppercase;
+      letter-spacing:.42em;
+      font-size:.66rem;
+      font-weight:600;
+      color:var(--herb);
+      padding-left:.42em;
+    }
+    .brand h1{
+      font-size:clamp(1.9rem,5vw,2.7rem);
+      font-weight:400;
+      font-style:italic;
+      margin-top:.35em;
+      color:var(--cream);
+    }
+
+    /* ---- mode switch ---- */
+    .modes{
+      display:flex;
+      gap:6px;
+      padding:5px;
+      background:rgba(0,0,0,.28);
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:999px;
+    }
+    .modes button{
+      font-family:ui-sans-serif,system-ui,sans-serif;
+      font-size:.78rem;
+      font-weight:600;
+      letter-spacing:.02em;
+      color:var(--muted);
+      background:transparent;
+      border:none;
+      padding:9px 16px;
+      border-radius:999px;
+      cursor:pointer;
+      transition:color .2s, background .25s;
+    }
+    .modes button:hover{color:var(--cream)}
+    .modes button[aria-pressed="true"]{
+      color:#2a1207;
+      background:var(--ring);
+    }
+
+    /* stack the two switcher rows tightly as one unit */
+    .switches{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:10px;
+    }
+
+    /* ---- tomato variety switch ---- */
+    .varieties{
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:center;
+      gap:6px;
+      padding:5px;
+      background:rgba(0,0,0,.28);
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:999px;
+    }
+    .varieties button{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      font-family:ui-sans-serif,system-ui,sans-serif;
+      font-size:.78rem;
+      font-weight:600;
+      letter-spacing:.02em;
+      color:var(--muted);
+      background:transparent;
+      border:none;
+      padding:9px 16px;
+      border-radius:999px;
+      cursor:pointer;
+      transition:color .2s, background .25s;
+    }
+    .varieties button:hover{color:var(--cream)}
+    .varieties button[aria-pressed="true"]{
+      color:#2a1207;
+      background:var(--ring);
+    }
+    .swatch{
+      width:13px;
+      height:13px;
+      flex:none;
+      border-radius:50% 50% 50% 50% / 55% 55% 45% 45%;
+      box-shadow:inset 0 0 0 1px rgba(0,0,0,.3);
+    }
+    .swatch.beefsteak{background:radial-gradient(circle at 35% 30%,#ff8a6b,#c62216)}
+    .swatch.green{background:radial-gradient(circle at 35% 30%,#e6f18c,#5f9130)}
+    .swatch.krim{background:radial-gradient(circle at 35% 30%,#b07690,#3a1c34)}
+    .swatch.tomacco{background:radial-gradient(circle at 35% 30%,#ef6a4e,#5c3418)}
+
+    /* ---- the tomato timer ---- */
+    .stage{
+      --size:clamp(240px,74vw,360px);
+      position:relative;
+      width:var(--size);
+      height:var(--size);
+      display:grid;
+      place-items:center;
+    }
+
+    .tomato{
+      position:absolute;
+      inset:6%;
+      border-radius:50%;
+      background:
+        var(--stripes),
+        radial-gradient(circle at 37% 30%,
+          var(--tomato-hi) 0%, var(--tomato-mid) 27%,
+          var(--tomato-shade) 56%, var(--tomato-deep) 100%);
+      background-blend-mode:var(--stripe-blend), normal;
+      box-shadow:
+        inset -20px -24px 44px var(--shadow-dark),
+        inset 16px 18px 34px var(--shadow-light),
+        0 26px 54px rgba(0,0,0,.5);
+      transition:background .4s ease, box-shadow .4s ease;
+    }
+    /* glossy specular highlight */
+    .tomato::after{
+      content:"";
+      position:absolute;
+      left:22%; top:16%;
+      width:34%; height:26%;
+      border-radius:50%;
+      background:radial-gradient(circle at 40% 40%, rgba(255,255,255,.72), rgba(255,255,255,0) 70%);
+      filter:blur(1px);
+    }
+
+    /* leafy calyx + stem on the crown */
+    .leaf{
+      position:absolute;
+      top:-2%;
+      left:50%;
+      width:34%;
+      height:34%;
+      transform:translateX(-50%);
+      z-index:4;
+      filter:drop-shadow(0 4px 5px rgba(0,0,0,.35));
+    }
+
+    /* svg overlay: track, progress ring, ticks, sweeping hand */
+    .dial{
+      position:absolute;
+      inset:6%;
+      z-index:3;
+      overflow:visible;
+    }
+    .track{fill:none;stroke:var(--ring-track);stroke-width:7}
+    .progress{
+      fill:none;
+      stroke:var(--ring);
+      stroke-width:7;
+      stroke-linecap:round;
+      transform:rotate(-90deg);
+      transform-origin:150px 150px;
+      filter:drop-shadow(0 0 4px rgba(255,225,168,.5));
+    }
+    .tick{stroke:rgba(255,235,215,.55);stroke-width:2}
+    .tick.major{stroke:rgba(255,235,215,.9);stroke-width:3}
+    .hand-group{transform-origin:150px 150px}
+    .hand{stroke:var(--hand);stroke-width:5;stroke-linecap:round}
+    .hand-tip{stroke:var(--hand-tip);stroke-width:5;stroke-linecap:round}
+    .hub{fill:var(--hand);stroke:var(--hand-tip);stroke-width:2}
+
+    /* center readout sits above the dial */
+    .readout{
+      position:relative;
+      z-index:3;
+      text-align:center;
+      pointer-events:none;
+      text-shadow:0 2px 6px rgba(80,6,2,.6);
+    }
+    .time{
+      font-family:ui-sans-serif,system-ui,sans-serif;
+      font-variant-numeric:tabular-nums;
+      font-weight:700;
+      font-size:clamp(2.6rem,12vw,3.9rem);
+      letter-spacing:.01em;
+      line-height:1;
+      color:var(--cream);
+    }
+    .phase{
+      font-family:ui-sans-serif,system-ui,sans-serif;
+      text-transform:uppercase;
+      letter-spacing:.34em;
+      font-size:.66rem;
+      font-weight:600;
+      margin-top:.7em;
+      padding-left:.34em;
+      color:#ffdcc7;
+    }
+
+    .stage.done .tomato{animation:wobble .6s ease}
+    @keyframes wobble{
+      0%,100%{transform:rotate(0) scale(1)}
+      20%{transform:rotate(-4deg) scale(1.04)}
+      45%{transform:rotate(3deg) scale(.98)}
+      70%{transform:rotate(-2deg) scale(1.02)}
+    }
+
+    /* ---- controls ---- */
+    .controls{
+      display:flex;
+      align-items:center;
+      gap:14px;
+    }
+    .btn{
+      font-family:ui-sans-serif,system-ui,sans-serif;
+      cursor:pointer;
+      border:none;
+      transition:transform .12s ease, background .2s, color .2s, box-shadow .2s;
+    }
+    .btn:active{transform:translateY(1px)}
+    .btn.primary{
+      font-size:1rem;
+      font-weight:700;
+      letter-spacing:.04em;
+      color:#2a1207;
+      background:var(--ring);
+      padding:14px 40px;
+      border-radius:999px;
+      box-shadow:0 8px 22px rgba(255,225,168,.28);
+    }
+    .btn.primary:hover{box-shadow:0 10px 28px rgba(255,225,168,.4)}
+    .btn.ghost{
+      font-size:.82rem;
+      font-weight:600;
+      color:var(--muted);
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.1);
+      padding:13px 22px;
+      border-radius:999px;
+    }
+    .btn.ghost:hover{color:var(--cream);background:rgba(255,255,255,.1)}
+
+    /* completed-session pips */
+    .harvest{
+      display:flex;
+      align-items:center;
+      gap:9px;
+      min-height:16px;
+    }
+    .harvest .label{
+      font-family:ui-sans-serif,system-ui,sans-serif;
+      font-size:.66rem;
+      text-transform:uppercase;
+      letter-spacing:.22em;
+      color:var(--herb);
+      margin-right:2px;
+    }
+    .pip{
+      width:12px;height:12px;border-radius:50% 50% 50% 50% / 55% 55% 45% 45%;
+      background:var(--pip-off);
+      transition:background .3s, transform .3s;
+    }
+    .pip.on{background:var(--pip-on);transform:scale(1.05)}
+
+    :focus-visible{outline:3px solid var(--ring);outline-offset:3px;border-radius:6px}
+
+    @media (prefers-reduced-motion:reduce){
+      .stage.done .tomato{animation:none}
+      .btn{transition:none}
+    }
+  </style>
+</head>
+<body data-variety="beefsteak">
+
+  <header class="brand">
+    <div class="kicker">The Pomodoro Technique</div>
+    <h1>Tomato Timer</h1>
+  </header>
+
+  <div class="switches">
+    <div class="modes" role="group" aria-label="Timer mode">
+      <button data-mode="focus" data-min="25" aria-pressed="true">Focus · 25</button>
+      <button data-mode="short" data-min="5" aria-pressed="false">Short · 5</button>
+      <button data-mode="long"  data-min="15" aria-pressed="false">Long · 15</button>
+    </div>
+
+    <div class="varieties" role="group" aria-label="Tomato variety">
+      <button data-variety="beefsteak" aria-pressed="true"><span class="swatch beefsteak"></span>Beefsteak</button>
+      <button data-variety="green" aria-pressed="false"><span class="swatch green"></span>Green Zebra</button>
+      <button data-variety="krim" aria-pressed="false"><span class="swatch krim"></span>Black Krim</button>
+      <button data-variety="tomacco" aria-pressed="false"><span class="swatch tomacco"></span>Tomacco</button>
+    </div>
+  </div>
+
+  <div class="stage" id="stage">
+    <div class="tomato"></div>
+
+    <!-- leafy calyx, drawn as vector paths -->
+    <svg class="leaf" viewBox="0 0 100 100" aria-hidden="true">
+      <g fill="var(--leaf)" stroke="var(--leaf-deep)" stroke-width="1.5" stroke-linejoin="round">
+        <path d="M50 62 L28 30 L44 44 Z"/>
+        <path d="M50 62 L72 30 L56 44 Z"/>
+        <path d="M50 64 L34 22 L50 42 Z"/>
+        <path d="M50 64 L66 22 L50 42 Z"/>
+        <path d="M50 66 L50 18 L58 40 Z" fill="var(--leaf-deep)"/>
+      </g>
+      <rect x="47" y="6" width="6" height="20" rx="3" fill="var(--leaf-deep)"/>
+    </svg>
+
+    <!-- dial: track, progress ring, tick marks, sweeping hand -->
+    <svg class="dial" viewBox="0 0 300 300" aria-hidden="true">
+      <circle class="track" cx="150" cy="150" r="128"/>
+      <circle class="progress" id="progress" cx="150" cy="150" r="128"/>
+      <g id="ticks"></g>
+      <g class="hand-group" id="hand">
+        <line class="hand" x1="150" y1="162" x2="150" y2="150"/>
+        <line class="hand-tip" x1="150" y1="150" x2="150" y2="44"/>
+        <circle class="hub" cx="150" cy="150" r="7"/>
+      </g>
+    </svg>
+
+    <div class="readout">
+      <div class="time" id="time" aria-live="polite">25:00</div>
+      <div class="phase" id="phase">Focus</div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="btn ghost" id="reset" title="Reset (R)">Reset</button>
+    <button class="btn primary" id="toggle" title="Start / Pause (Space)">Start</button>
+  </div>
+
+  <div class="harvest" id="harvest" aria-label="Completed focus sessions">
+    <span class="label">Harvest</span>
+  </div>
+
+  <script>
+    // Tomato Timer — pomodoro clock, mode switching, variety theming, and chime.
+    // Loaded with `defer`, so the DOM is ready by the time this runs.
+
+    (function(){
+      'use strict';
+
+      const MODES = {
+        focus: { min:25, label:"Focus" },
+        short: { min:5,  label:"Short break" },
+        long:  { min:15, label:"Long break" }
+      };
+
+      const stage    = document.getElementById('stage');
+      const timeEl   = document.getElementById('time');
+      const phaseEl  = document.getElementById('phase');
+      const toggleBtn= document.getElementById('toggle');
+      const resetBtn = document.getElementById('reset');
+      const progress = document.getElementById('progress');
+      const handEl   = document.getElementById('hand');
+      const ticksEl  = document.getElementById('ticks');
+      const harvestEl= document.getElementById('harvest');
+      const modeBtns = Array.from(document.querySelectorAll('.modes button'));
+      const varietyBtns = Array.from(document.querySelectorAll('.varieties button'));
+
+      const R = 128;
+      const CIRC = 2 * Math.PI * R;
+      progress.style.strokeDasharray = CIRC;
+
+      // build 60 tick marks, longer every 5th
+      for (let i = 0; i < 60; i++){
+        const major = i % 5 === 0;
+        const a = (i / 60) * Math.PI * 2 - Math.PI/2;
+        const outer = 138, inner = major ? 126 : 132;
+        const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+        line.setAttribute('x1', 150 + Math.cos(a)*inner);
+        line.setAttribute('y1', 150 + Math.sin(a)*inner);
+        line.setAttribute('x2', 150 + Math.cos(a)*outer);
+        line.setAttribute('y2', 150 + Math.sin(a)*outer);
+        line.setAttribute('class', major ? 'tick major' : 'tick');
+        ticksEl.appendChild(line);
+      }
+
+      let mode = 'focus';
+      let total = MODES[mode].min * 60 * 1000;   // ms
+      let remaining = total;                      // ms
+      let running = false;
+      let endAt = 0;                              // timestamp when it hits zero
+      let rafId = null;
+      let completedFocus = 0;
+
+      function fmt(ms){
+        const s = Math.max(0, Math.ceil(ms/1000));
+        const m = Math.floor(s/60);
+        const r = s % 60;
+        return m + ':' + String(r).padStart(2,'0');
+      }
+
+      function render(){
+        timeEl.textContent = fmt(remaining);
+        const elapsed = total - remaining;
+        const frac = total > 0 ? elapsed/total : 0;
+        // drain the ring as time elapses
+        progress.style.strokeDashoffset = CIRC * frac;
+        // sweep the hand once around per session
+        handEl.style.transform = 'rotate(' + (frac * 360) + 'deg)';
+      }
+
+      function tick(){
+        remaining = endAt - Date.now();
+        if (remaining <= 0){
+          remaining = 0;
+          render();
+          finish();
+          return;
+        }
+        render();
+        rafId = requestAnimationFrame(tick);
+      }
+
+      function start(){
+        if (running || remaining <= 0) return;
+        running = true;
+        endAt = Date.now() + remaining;
+        toggleBtn.textContent = 'Pause';
+        stage.classList.remove('done');
+        rafId = requestAnimationFrame(tick);
+      }
+
+      function pause(){
+        if (!running) return;
+        running = false;
+        cancelAnimationFrame(rafId);
+        remaining = endAt - Date.now();
+        toggleBtn.textContent = 'Resume';
+        render();
+      }
+
+      function reset(){
+        running = false;
+        cancelAnimationFrame(rafId);
+        total = MODES[mode].min * 60 * 1000;
+        remaining = total;
+        toggleBtn.textContent = 'Start';
+        stage.classList.remove('done');
+        render();
+      }
+
+      function finish(){
+        running = false;
+        cancelAnimationFrame(rafId);
+        toggleBtn.textContent = 'Start';
+        stage.classList.add('done');
+        chime();
+        if (mode === 'focus'){
+          completedFocus++;
+          drawHarvest();
+        }
+        // reset back to full so it's ready to go again
+        remaining = total;
+        setTimeout(() => { if(!running) render(); }, 650);
+      }
+
+      function setMode(next){
+        mode = next;
+        modeBtns.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === mode)));
+        phaseEl.textContent = MODES[mode].label;
+        reset();
+      }
+
+      function drawHarvest(){
+        // keep the label, refresh pips
+        harvestEl.querySelectorAll('.pip').forEach(p => p.remove());
+        const shown = Math.min(completedFocus, 8);
+        for (let i = 0; i < Math.max(shown, 4); i++){
+          const pip = document.createElement('span');
+          pip.className = 'pip' + (i < completedFocus ? ' on' : '');
+          harvestEl.appendChild(pip);
+        }
+      }
+
+      // gentle three-note chime, no audio files
+      let audioCtx = null;
+      function chime(){
+        try{
+          audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+          const now = audioCtx.currentTime;
+          [880, 1108, 1318].forEach((f, i) => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.value = f;
+            const t = now + i * 0.18;
+            gain.gain.setValueAtTime(0.0001, t);
+            gain.gain.exponentialRampToValueAtTime(0.25, t + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.4);
+            osc.connect(gain).connect(audioCtx.destination);
+            osc.start(t);
+            osc.stop(t + 0.42);
+          });
+        }catch(e){/* audio not available, fine */}
+      }
+
+      // events
+      toggleBtn.addEventListener('click', () => running ? pause() : start());
+      resetBtn.addEventListener('click', reset);
+      modeBtns.forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
+
+      function setVariety(next){
+        document.body.dataset.variety = next;
+        varietyBtns.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.variety === next)));
+      }
+      varietyBtns.forEach(b => b.addEventListener('click', () => setVariety(b.dataset.variety)));
+
+      document.addEventListener('keydown', (e) => {
+        if (e.code === 'Space'){ e.preventDefault(); running ? pause() : start(); }
+        else if (e.key.toLowerCase() === 'r'){ reset(); }
+      });
+
+      drawHarvest();
+      render();
+    })();
+  </script>
+
+</body>
+</html>

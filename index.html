@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pomato Timer</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+<body data-variety="beefsteak">
+
+  <header class="brand">
+    <div class="kicker">The Pomodoro Technique</div>
+    <h1>Pomato Timer</h1>
+  </header>
+
+  <div class="switches">
+    <div class="modes" role="group" aria-label="Timer mode">
+      <button data-mode="focus" data-min="25" aria-pressed="true">Focus &#183; 25</button>
+      <button data-mode="long"  data-min="15" aria-pressed="false">Long &#183; 15</button>
+      <button data-mode="short" data-min="5" aria-pressed="false">Short &#183; 5</button>
+    </div>
+
+    <div class="varieties" role="group" aria-label="Tomato variety">
+      <button data-variety="beefsteak" aria-pressed="true"><span class="swatch beefsteak"></span>Beefsteak</button>
+      <button data-variety="green" aria-pressed="false"><span class="swatch green"></span>Green Zebra</button>
+      <button data-variety="krim" aria-pressed="false"><span class="swatch krim"></span>Black Krim</button>
+      <button data-variety="tomacco" aria-pressed="false"><span class="swatch tomacco"></span>Tomacco</button>
+    </div>
+  </div>
+
+  <div class="stage" id="stage">
+    <div class="tomato"></div>
+
+    <!-- leafy calyx, drawn as vector paths -->
+    <svg class="leaf" viewBox="0 0 100 100" aria-hidden="true">
+      <g fill="var(--leaf)" stroke="var(--leaf-deep)" stroke-width="1.5" stroke-linejoin="round">
+        <path d="M50 62 L28 30 L44 44 Z"/>
+        <path d="M50 62 L72 30 L56 44 Z"/>
+        <path d="M50 64 L34 22 L50 42 Z"/>
+        <path d="M50 64 L66 22 L50 42 Z"/>
+        <path d="M50 66 L50 18 L58 40 Z" fill="var(--leaf-deep)"/>
+      </g>
+      <rect x="47" y="6" width="6" height="20" rx="3" fill="var(--leaf-deep)"/>
+    </svg>
+
+    <!-- dial: track, progress ring, tick marks, sweeping hand -->
+    <svg class="dial" viewBox="0 0 300 300" aria-hidden="true">
+      <circle class="track" cx="150" cy="150" r="128"/>
+      <circle class="progress" id="progress" cx="150" cy="150" r="128"/>
+      <g id="ticks"></g>
+      <g class="hand-group" id="hand">
+        <line class="hand" x1="150" y1="162" x2="150" y2="150"/>
+        <line class="hand-tip" x1="150" y1="150" x2="150" y2="44"/>
+        <circle class="hub" cx="150" cy="150" r="7"/>
+      </g>
+    </svg>
+
+    <div class="readout">
+      <div class="time" id="time" aria-live="polite">25:00</div>
+      <div class="phase" id="phase">Focus</div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="btn primary" id="toggle" title="Start / Pause (Space)">Start</button>
+    <button class="btn ghost" id="reset" title="Reset (R)">Reset</button>
+  </div>
+
+  <div class="harvest" id="harvest" aria-label="Completed focus sessions">
+    <span class="label">Harvest</span>
+  </div>
+
+</body>
+</html>
